@@ -1,27 +1,32 @@
+//
+
 #include <ESP8266WiFi.h>
 #include <SoftwareSerial.h>
 
-#define RX_PIN D6   // From Arduino TX
-#define TX_PIN D5   // To Arduino RX
+#define RX_PIN D6   // Arduino TX → ESP RX
+#define TX_PIN D5   // ESP TX → Arduino RX
 
 SoftwareSerial edgeSerial(RX_PIN, TX_PIN);
 
 const char* ssid = "ND10";
 const char* password = "Leomessi10";
 
-const char* host = "172.30.210.210";   // Change to your server
+const char* host = "10.176.59.210";   // Your PC running Flask
 const int port = 5000;
 
 String buffer = "";
 
-void setup() {
-  Serial.begin(115200);       // Debug
-  edgeSerial.begin(9600);     // From Edge
+void setup()
+{
+  Serial.begin(115200);
+  edgeSerial.begin(9600);
 
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid,password);
 
   Serial.print("Connecting");
-  while (WiFi.status() != WL_CONNECTED) {
+
+  while(WiFi.status()!=WL_CONNECTED)
+  {
     delay(500);
     Serial.print(".");
   }
@@ -30,32 +35,42 @@ void setup() {
   Serial.println(WiFi.localIP());
 }
 
-void loop() {
-
-  while (edgeSerial.available()) {
+void loop()
+{
+  while(edgeSerial.available())
+  {
     char c = edgeSerial.read();
 
-    if (c == '\n') {
+    if(c == '\n')
+    {
       buffer.trim();
       processData(buffer);
       buffer = "";
-    } else {
+    }
+    else
+    {
       buffer += c;
     }
   }
 }
 
-void processData(String data) {
+void processData(String data)
+{
+  Serial.println("UART RX: " + data);
 
-  if (!data.startsWith("SEND:"))
-    return;
+  if(!data.startsWith("EDGE"))
+      return;
 
-  int commaIndex = data.indexOf(',');
-  if (commaIndex == -1)
-    return;
+  int p1 = data.indexOf(',');
+  int p2 = data.indexOf(',',p1+1);
+  int p3 = data.indexOf(',',p2+1);
 
-  int nodeId = data.substring(5, commaIndex).toInt();
-  float temp = data.substring(commaIndex + 1).toFloat();
+  if(p1==-1 || p2==-1 || p3==-1)
+      return;
+
+  int nodeId = data.substring(p1+1,p2).toInt();
+  float temp = data.substring(p2+1,p3).toFloat();
+  int state = data.substring(p3+1).toInt();
 
   String json = "{";
   json += "\"edge\":0,";
@@ -63,16 +78,19 @@ void processData(String data) {
   json += nodeId;
   json += ",\"temperature\":";
   json += temp;
+  json += ",\"state\":";
+  json += state;
   json += "}";
 
   sendToServer(json);
 }
 
-void sendToServer(String json) {
-
+void sendToServer(String json)
+{
   WiFiClient client;
 
-  if (!client.connect(host, port)) {
+  if(!client.connect(host,port))
+  {
     Serial.println("Server connection failed");
     return;
   }
