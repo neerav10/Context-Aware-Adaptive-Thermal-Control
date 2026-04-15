@@ -356,7 +356,7 @@ def dashboard():
 
         // Run immediately, then every 2 seconds
         updateData();
-        setInterval(updateData, 2000);
+        setInterval(updateData, 500);
         </script>
 
     </body>
