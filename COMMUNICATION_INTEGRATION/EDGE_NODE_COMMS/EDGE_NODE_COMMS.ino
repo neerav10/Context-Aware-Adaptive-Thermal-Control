@@ -446,8 +446,8 @@ void setup() {
 void loop() {
   unsigned long now = millis();
 
-  // ---- Alternate polling NODE1 and NODE3 every 1 seconds ----
-  if (now - lastPoll >= 200) {
+  // ---- Alternate polling NODE1 and NODE3 every 0.5 seconds ----
+  if (now - lastPoll >= 500) {
     lastPoll = now;
     if (currentNode == NODE1_ID) {
       pollNode(ADDR_NODE1);

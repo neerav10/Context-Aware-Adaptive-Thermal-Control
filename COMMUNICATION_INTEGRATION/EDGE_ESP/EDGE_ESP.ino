@@ -129,7 +129,7 @@ const char* ssid = "ND10";
 const char* password = "Leomessi10";
 
 // 🌍 Flask server
-const char* host = "10.181.185.210";
+const char* host = "10.177.194.210";
 const int port = 5000;
 
 String buffer = "";
